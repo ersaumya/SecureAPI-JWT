@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using SecureAPI.Models;
 using SecureAPI.Services;
 
 namespace SecureAPI.Controllers
@@ -16,6 +17,13 @@ namespace SecureAPI.Controllers
         public UserController(IUserService userService)
         {
             _userService = userService;
+        }
+
+        [HttpPost("register")]
+        public async Task<IActionResult> RegisterAsync(Register model)
+        {
+            var result = await _userService.RegisterAsync(model);
+            return Ok(result);
         }
     }
 }
