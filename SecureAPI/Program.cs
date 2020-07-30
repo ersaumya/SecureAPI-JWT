@@ -15,7 +15,7 @@ namespace SecureAPI
 {
     public class Program
     {
-        public async static void Main(string[] args)
+        public async static Task Main(string[] args)
         {
             // CreateHostBuilder(args).Build().Run();
             var host = CreateHostBuilder(args)
