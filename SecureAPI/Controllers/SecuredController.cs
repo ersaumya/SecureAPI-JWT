@@ -18,5 +18,12 @@ namespace SecureAPI.Controllers
         {
             return Ok("This Secured Data is available only for Authenticated Users.");
         }
+
+        [HttpPost]
+        [Authorize(Roles = "Admin")]
+        public IActionResult PostSecuredData()
+        {
+            return Ok("This Secured Data is available only for Authenticated Users.");
+        }
     }
 }

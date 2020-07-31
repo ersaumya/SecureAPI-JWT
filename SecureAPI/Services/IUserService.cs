@@ -10,5 +10,6 @@ namespace SecureAPI.Services
     {
         Task<string> RegisterAsync(Register registerModel);
         Task<AuthenticationModel> GetTokenAsync(TokenRequest tokenRequest);
+        Task<string> AddRoleAsync(AddRole model);
     }
 }
