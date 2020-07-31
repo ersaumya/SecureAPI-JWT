@@ -9,5 +9,6 @@ namespace SecureAPI.Services
     public interface IUserService
     {
         Task<string> RegisterAsync(Register registerModel);
+        Task<AuthenticationModel> GetTokenAsync(TokenRequest tokenRequest);
     }
 }
