@@ -30,6 +30,7 @@ namespace SecureAPI.Controllers
         public async Task<IActionResult> GetTokenAsync(TokenRequest model)
         {
             var result = await _userService.GetTokenAsync(model);
+            SetRefreshTokenInCookie(result.RefreshToken);
             return Ok(result);
         }
 
