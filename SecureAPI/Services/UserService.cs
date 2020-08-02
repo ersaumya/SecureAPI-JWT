@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SecureAPI.Constant;
+using SecureAPI.Data;
 using SecureAPI.Models;
 using SecureAPI.Settings;
 using System;
@@ -17,11 +18,13 @@ namespace SecureAPI.Services
 {
     public class UserService:IUserService
     {
+        private readonly ApplicationDbContext _context;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly RoleManager<IdentityRole> _roleManager;
         private readonly Jwt _jwt;
-        public UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IOptions<Jwt> jwt)
+        public UserService(UserManager<ApplicationUser> userManager, RoleManager<IdentityRole> roleManager, IOptions<Jwt> jwt, ApplicationDbContext context
         {
+            _context = context;
             _userManager = userManager;
             _roleManager = roleManager;
             _jwt = jwt.Value;
@@ -73,6 +76,23 @@ namespace SecureAPI.Services
                 authenticationModel.UserName = user.UserName;
                 var rolesList = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
                 authenticationModel.Roles = rolesList.ToList();
+                //Checks if any active refresh token available for authenticate user and set active refresh token to the response object i.e AuthenticationModel
+                //Else call create refreshtoken and set to response object and save to the RefreshTokens table.
+                if (user.RefreshTokens.Any(a => a.IsActive))
+                {
+                    var activeRefreshToken = user.RefreshTokens.Where(a => a.IsActive == true).FirstOrDefault();
+                    authenticationModel.RefreshToken = activeRefreshToken.Token;
+                    authenticationModel.RefreshTokenExpiration = activeRefreshToken.Expires;
+                }
+                else
+                {
+                    var refreshToken = CreateRefreshToken();
+                    authenticationModel.RefreshToken = refreshToken.Token;
+                    authenticationModel.RefreshTokenExpiration = refreshToken.Expires;
+                    user.RefreshTokens.Add(refreshToken);
+                    _context.Update(user);
+                    _context.SaveChanges();
+                }
                 return authenticationModel;
             }
             authenticationModel.IsAuthenticated = false;
