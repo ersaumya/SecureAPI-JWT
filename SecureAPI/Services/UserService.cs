@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -127,6 +128,25 @@ namespace SecureAPI.Services
                 return $"Role {model.Role} not found.";
             }
             return $"Incorrect Credentials for user {user.Email}.";
+        }
+
+        /// <summary>
+        /// Create refresh token(random number) using RNGcrypto function to generate a 32-byte string
+        /// </summary>
+        /// <returns></returns>
+        private RefreshToken CreateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using(var generator=new RNGCryptoServiceProvider())
+            {
+                generator.GetBytes(randomNumber);
+                return new RefreshToken
+                {
+                    Token = Convert.ToBase64String(randomNumber),
+                    Expires = DateTime.UtcNow.AddDays(10),
+                    Created = DateTime.UtcNow
+                };
+            }
         }
     }
 }
