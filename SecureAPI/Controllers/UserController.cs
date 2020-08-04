@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SecureAPI.Models;
@@ -63,6 +64,14 @@ namespace SecureAPI.Controllers
         {
             var result = await _userService.AddRoleAsync(model);
             return Ok(result);
+        }
+
+        [Authorize]
+        [HttpPost("tokens/{id}")]
+        public IActionResult GetRefreshTokens(string id)
+        {
+            var user = _userService.GetById(id);
+            return Ok(user.RefreshTokens);
         }
     }
 }
