@@ -13,5 +13,6 @@ namespace SecureAPI.Services
         Task<string> AddRoleAsync(AddRole model);
         Task<AuthenticationModel> RefreshTokenAsync(string token);
         ApplicationUser GetById(string id);
+        bool RevokeToken(string token);
     }
 }

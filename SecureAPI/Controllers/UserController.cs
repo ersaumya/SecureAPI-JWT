@@ -73,5 +73,18 @@ namespace SecureAPI.Controllers
             var user = _userService.GetById(id);
             return Ok(user.RefreshTokens);
         }
+
+        [HttpPost("revoke-token")]
+        public IActionResult RevokeToken([FromBody] RevokeTokenRequest model)
+        {
+            // accept token from request body or cookie
+            var token = model.Token ?? Request.Cookies["refreshToken"];
+            if (string.IsNullOrEmpty(token))
+                return BadRequest(new { message = "Token is required" });
+            var response =  _userService.RevokeToken(token);
+            if (!response)
+                return NotFound(new { message = "Token not found" });
+            return Ok(new { message = "Token revoked" });
+        }
     }
 }
