@@ -48,6 +48,16 @@ namespace SecureAPI.Controllers
             Response.Cookies.Append("refreshToken", refreshToken, cookieOptions);
         }
 
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken()
+        {
+            var refreshToken = Request.Cookies["refreshToken"];
+            var response = await _userService.RefreshTokenAsync(refreshToken);
+            if (!string.IsNullOrEmpty(response.RefreshToken))
+                SetRefreshTokenInCookie(response.RefreshToken);
+            return Ok(response);
+        }
+
         [HttpPost("addrole")]
         public async Task<IActionResult> AddRoleAsync(AddRole model)
         {

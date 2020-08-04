@@ -168,5 +168,42 @@ namespace SecureAPI.Services
                 };
             }
         }
+
+        public async Task<AuthenticationModel> RefreshTokenAsync(string token)
+        {
+            var authenticationModel = new AuthenticationModel();
+            var user = _context.Users.SingleOrDefault(u => u.RefreshTokens.Any(t => t.Token == token));
+            if (user == null)
+            {
+                authenticationModel.IsAuthenticated = false;
+                authenticationModel.Message = $"Token did not match any users.";
+                return authenticationModel;
+            }
+            var refreshToken = user.RefreshTokens.Single(x => x.Token == token);
+            if (!refreshToken.IsActive)
+            {
+                authenticationModel.IsAuthenticated = false;
+                authenticationModel.Message = $"Token Not Active.";
+                return authenticationModel;
+            }
+            //Revoke Current Refresh Token
+            refreshToken.Revoked = DateTime.UtcNow;
+            //Generate new Refresh Token and save to Database
+            var newRefreshToken = CreateRefreshToken();
+            user.RefreshTokens.Add(newRefreshToken);
+            _context.Update(user);
+            _context.SaveChanges();
+            //Generates new jwt
+            authenticationModel.IsAuthenticated = true;
+            JwtSecurityToken jwtSecurityToken = await CreateJwtToken(user);
+            authenticationModel.Token = new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
+            authenticationModel.Email = user.Email;
+            authenticationModel.UserName = user.UserName;
+            var rolesList = await _userManager.GetRolesAsync(user).ConfigureAwait(false);
+            authenticationModel.Roles = rolesList.ToList();
+            authenticationModel.RefreshToken = newRefreshToken.Token;
+            authenticationModel.RefreshTokenExpiration = newRefreshToken.Expires;
+            return authenticationModel;
+        }
     }
 }
